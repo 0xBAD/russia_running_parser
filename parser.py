@@ -11,12 +11,14 @@ class RunningRussiaParser:
 
 
     def parse_events(self, elements: list):
+        res = ""
         for p_element in elements:
-            # print(p_element.text, end="\n"*2)
-            print(p_element.find_element_by_class_name("event-card__header-col").text)
-            print(p_element.find_element_by_class_name("event-card__name").text)
-            print(p_element.find_element_by_class_name("event-card__name").get_attribute("href"))
-            print(p_element.find_element_by_class_name("event-card__location").text, end="\n" * 2)
+            event_date = p_element.find_element_by_class_name("event-card__header-col").text
+            card_name = p_element.find_element_by_class_name("event-card__name").text
+            event_link = p_element.find_element_by_class_name("event-card__name").get_attribute("href")
+            event_location = p_element.find_element_by_class_name("event-card__location").text
+            res += f"{event_date}\n{card_name}\n{event_link}\n{event_location}\n\n"
+        return res
 
     def run(self):
         button_num = 1
@@ -26,13 +28,13 @@ class RunningRussiaParser:
             if pagination_button.text.isdigit():
                 button_num = pagination_button.text
         current_page = 0
-        print(button_num)
-
-        while current_page < int(button_num):
-            p_elements = self.driver.find_elements_by_class_name("event-card")
-            self.parse_events(p_elements)
-            current_page += 1
-            self.driver.get(f"{URL}&p={current_page}")
+        with open("results.txt", "w") as fs:
+            while current_page < int(button_num):
+                p_elements = self.driver.find_elements_by_class_name("event-card")
+                data = self.parse_events(p_elements)
+                fs.write(data)
+                current_page += 1
+                self.driver.get(f"{URL}&p={current_page}")
 
 
 if __name__ == '__main__':
